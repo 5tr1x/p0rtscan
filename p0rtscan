@@ -1,0 +1,48 @@
+#!/bin/bash
+
+trap ctrl_c INT
+
+function ctrl_c() {
+        printf '\nBye!\n'
+        rm ping_temp nmap_temp nmap
+        exit 1
+} 2>/dev/null
+
+if [ -z $1 ]
+then
+	echo 'Usage: p0rtscan <IP>'
+	exit 1
+fi
+
+echo '[*] Pinging target...'
+ping -c 5 $1 | grep ttl | cut -f6 -d ' ' > ping_temp
+if grep -q 63 ping_temp
+then
+	echo 'Target is UP'
+	echo 'Target is likely LINUX'
+
+elif grep -q 127 ping_temp
+then
+	echo 'Target is UP'
+	echo 'Target is likely WINDOWS'
+elif grep -q 254 ping_temp
+then
+	echo 'Target is UP'
+	echo 'Target is likely OTHER'
+else
+	echo 'Target not responding to ping'
+	rm ping_temp
+	exit 1
+fi
+rm ping_temp
+echo ''
+
+echo '[*] Scanning all ports...'
+nmap -v $1 -p- -oN nmap_temp | grep Discovered
+ports=$(cat nmap_temp | grep tcp | cut -f1 -d '/' | tr '\n' ',')
+rm nmap_temp
+echo ''
+
+echo '[*] Starting detailed scan...'
+sleep 1
+nmap $1 -p $ports -sCV -oN nmap
