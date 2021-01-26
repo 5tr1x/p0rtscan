@@ -45,4 +45,4 @@ echo ''
 
 echo '[*] Starting detailed scan...'
 sleep 1
-nmap $1 -p $ports -sCV -oN nmap
+nmap $1 -p $ports -sCV -oN nmap-$1
