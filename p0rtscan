@@ -4,7 +4,7 @@ trap ctrl_c INT
 
 function ctrl_c() {
         printf '\nBye!\n'
-        rm ping_temp nmap_temp nmap-$1
+        rm ping_temp nmap*
         exit 1
 } 2>/dev/null
 
