@@ -4,7 +4,7 @@ trap ctrl_c INT
 
 function ctrl_c() {
         printf '\nBye!\n'
-        rm ping_temp nmap*
+        rm ping_temp nmap_temp $out
         exit 1
 } 2>/dev/null
 
@@ -45,4 +45,5 @@ echo ''
 
 echo '[*] Starting detailed scan...'
 sleep 1
-nmap $1 -p $ports -sCV -oN nmap-$1
+out=$(echo nmap-$1)
+nmap $1 -p $ports -sCV -oN $out
