@@ -18,56 +18,54 @@ while getopts ':dp' opt
 do
 	case $opt in
 		d)
-		echo '[*] Pinging target...'
-		ping -c 5 $2 | grep ttl | cut -f6 -d ' ' > ping_temp
-		if grep -q '64\|63\|62\|61' ping_temp
-		then
-		        echo 'Target is UP'
-		        echo 'Target is likely LINUX'
+			echo '[*] Pinging target...'
+			ping -c 5 $2 | grep ttl | cut -f6 -d ' ' > ping_temp
+			if grep -q '64\|63\|62\|61' ping_temp
+			then
+			        echo 'Target is UP'
+			        echo 'Target is likely LINUX'
 
-		elif grep -q '128\|127\|126\|125' ping_temp
-		then
-		        echo 'Target is UP'
-		        echo 'Target is likely WINDOWS'
-		elif grep -q '255\|254\|253\|252' ping_temp
-		then
-		        echo 'Target is UP'
-		        echo 'Target is likely OTHER'
-		else
-		        echo 'Target not responding to ping'
-		        rm ping_temp
-		        exit 1
-		fi
-		rm ping_temp
-		echo ''
+			elif grep -q '128\|127\|126\|125' ping_temp
+			then
+			        echo 'Target is UP'
+			        echo 'Target is likely WINDOWS'
+			elif grep -q '255\|254\|253\|252' ping_temp
+			then
+			        echo 'Target is UP'
+			        echo 'Target is likely OTHER'
+			else
+			        echo 'Target not responding to ping'
+			        rm ping_temp
+			        exit 1
+			fi
+			rm ping_temp
+			echo ''
 
-		echo '[*] Scanning all ports...'
-		nmap -v $2 -p- -oN nmap_temp | grep Discovered
-		ports=$(cat nmap_temp | grep tcp | cut -f1 -d '/' | tr '\n' ',')
-		rm nmap_temp
-		echo ''
+			echo '[*] Scanning all ports...'
+			nmap -v $2 -p- -oN nmap_temp | grep Discovered
+			ports=$(cat nmap_temp | grep tcp | cut -f1 -d '/' | tr '\n' ',')
+			rm nmap_temp
+			echo ''
 
-		echo '[*] Starting detailed scan...'
-		sleep 1
-		out=$(echo nmap-$2)
-		nmap $2 -p $ports -sCV -oN $out
+			echo '[*] Starting detailed scan...'
+			sleep 1
+			out=$(echo nmap-$2)
+			nmap $2 -p $ports -sCV -oN $out
 		;;
-
 		p)
-		echo '[*] Scanning common ports...'
-		proxychains nmap -Pn -sT -v $2 -oN nmap_temp 2>/dev/null | grep Discovered
-		ports=$(cat nmap_temp | grep tcp | cut -f1 -d '/' | tr '\n' ',')
-		rm nmap_temp
-		echo ''
+			echo '[*] Scanning common ports...'
+			proxychains nmap -Pn -sT -v $2 -oN nmap_temp 2>/dev/null | grep Discovered
+			ports=$(cat nmap_temp | grep tcp | cut -f1 -d '/' | tr '\n' ',')
+			rm nmap_temp
+			echo ''
 
-		echo '[*] Starting detailed scan...'
-		sleep 1
-		out=$(echo nmap-$2)
-		proxychains nmap -Pn -sTCV $2 -p $ports -oN $out 2>/dev/null
+			echo '[*] Starting detailed scan...'
+			sleep 1
+			out=$(echo nmap-$2)
+			proxychains nmap -Pn -sTCV $2 -p $ports -oN $out 2>/dev/null
 		;;
-
 		\?)
-		echo 'Usage: p0rtscan <IP>'
+			echo 'Usage: p0rtscan <IP>'
 		;;
 	esac
 done
