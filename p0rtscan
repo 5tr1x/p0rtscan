@@ -29,6 +29,8 @@ while getopts ':dp' opt
 do
 	case $opt in
 		d)
+			echo '[*] DEFAULT SCAN'
+			echo ''
 			echo '[*] Pinging target...'
 			ping -c 5 $2 | grep ttl | cut -f6 -d ' ' > ping_temp
 			if grep -q '64\|63\|62\|61' ping_temp
@@ -64,6 +66,8 @@ do
 			nmap $2 -p $ports -sCV -oN $out
 		;;
 		p)
+			echo '[*] PROXY SCAN'
+                        echo ''
 			echo '[*] Scanning common ports...'
 			proxychains nmap -Pn -sT -v $2 -oN nmap_temp 2>/dev/null | grep Discovered
 			ports=$(cat nmap_temp | grep tcp | cut -f1 -d '/' | tr '\n' ',')
