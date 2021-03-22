@@ -17,6 +17,15 @@ Optimized nmap scan useful for pentesting, ctfs, etc
 - for best results comment out "proxy_dns" in /etc/proxychains.conf
 - saves results to output file
 
-<h2>Usage</h2>
+<h2>Options</h2>
 
-`p0rtscan <IP>`
+```
+usage: p0rtscan [-d] [-p] host
+
+optimized nmap scan useful for pentesting, ctfs, etc
+
+options:
+  -d	default scan
+  -p	proxy scan
+
+```
