@@ -8,9 +8,20 @@ function ctrl_c() {
         exit 1
 } 2>/dev/null
 
+function help() {
+	echo 'usage: p0rtscan [-d] [-p] host'
+	echo ''
+	echo 'optimized nmap scan useful for pentesting, ctfs, etc'
+	echo ''
+	echo 'options:'
+	echo -e '  -d\tdefault scan'
+	echo -e '  -p\tproxy scan'
+	echo ''
+}
+
 if [ -z $2 ]
 then
-	echo 'Usage: p0rtscan <IP>'
+	help
 	exit 1
 fi
 
@@ -65,7 +76,7 @@ do
 			proxychains nmap -Pn -sTCV $2 -p $ports -oN $out 2>/dev/null
 		;;
 		\?)
-			echo 'Usage: p0rtscan <IP>'
+			help
 		;;
 	esac
 done
