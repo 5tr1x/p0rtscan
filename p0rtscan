@@ -32,7 +32,7 @@ do
 			echo '[*] DEFAULT SCAN'
 			echo ''
 			echo '[*] Pinging target...'
-			ping -c 5 $2 | grep ttl | cut -f6 -d ' ' > ping_temp
+			ping -c 4 $2 | grep ttl | cut -f6 -d ' ' > ping_temp
 			if grep -q '64\|63\|62\|61' ping_temp
 			then
 			        echo 'Target is UP'
@@ -55,7 +55,7 @@ do
 			echo ''
 
 			echo '[*] Scanning all ports...'
-			nmap -v $2 -p- -oN nmap_temp | grep Discovered
+			nmap -v $2 -p- -T4 --min-rate 5000 -oN nmap_temp | grep Discovered
 			ports=$(cat nmap_temp | grep tcp | cut -f1 -d '/' | tr '\n' ',')
 			rm nmap_temp
 			echo ''
@@ -63,13 +63,13 @@ do
 			echo '[*] Starting detailed scan...'
 			sleep 1
 			out=$(echo nmap-$2)
-			nmap $2 -p $ports -sCV -oN $out
+			nmap $2 -p $ports -sCV -T4 -oN $out
 		;;
 		p)
 			echo '[*] PROXY SCAN'
                         echo ''
 			echo '[*] Scanning common ports...'
-			proxychains nmap -Pn -sT -v $2 -oN nmap_temp 2>/dev/null | grep Discovered
+			proxychains nmap -Pn -sT -v $2 -T4 -oN nmap_temp 2>/dev/null | grep Discovered
 			ports=$(cat nmap_temp | grep tcp | cut -f1 -d '/' | tr '\n' ',')
 			rm nmap_temp
 			echo ''
@@ -77,7 +77,7 @@ do
 			echo '[*] Starting detailed scan...'
 			sleep 1
 			out=$(echo nmap-$2)
-			proxychains nmap -Pn -sTCV $2 -p $ports -oN $out 2>/dev/null
+			proxychains nmap -Pn -sTCV $2 -p $ports -T4 -oN $out 2>/dev/null
 		;;
 		\?)
 			help
