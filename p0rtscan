@@ -33,16 +33,16 @@ do
 			echo ''
 			echo '[*] Pinging target...'
 			ping -c 4 $2 | grep ttl | cut -f6 -d ' ' > ping_temp
-			if grep -q '64\|63\|62\|61' ping_temp
+			if grep -q '64\|63\|62\|61\|60\|59\|58\|57' ping_temp
 			then
 			        echo 'Target is UP'
 			        echo 'Target is likely LINUX'
 
-			elif grep -q '128\|127\|126\|125' ping_temp
+			elif grep -q '128\|127\|126\|125\|124\|123\|122\|121' ping_temp
 			then
 			        echo 'Target is UP'
 			        echo 'Target is likely WINDOWS'
-			elif grep -q '255\|254\|253\|252' ping_temp
+			elif grep -q '255\|254\|253\|252\|251\|250\|249\|248' ping_temp
 			then
 			        echo 'Target is UP'
 			        echo 'Target is likely OTHER'
