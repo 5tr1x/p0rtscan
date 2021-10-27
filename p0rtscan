@@ -56,7 +56,7 @@ do
 
 			echo '[*] Scanning all ports...'
 			nmap -v $2 -p- -T4 --min-rate 5000 -oN nmap_temp | grep Discovered
-			ports=$(cat nmap_temp | grep tcp | cut -f1 -d '/' | tr '\n' ',')
+			ports=$(cat nmap_temp | grep /tcp | cut -f1 -d '/' | tr '\n' ',')
 			rm nmap_temp
 			echo ''
 
@@ -70,7 +70,7 @@ do
                         echo ''
 			echo '[*] Scanning common ports...'
 			proxychains nmap -Pn -sT -v $2 -T4 -oN nmap_temp 2>/dev/null | grep Discovered
-			ports=$(cat nmap_temp | grep tcp | cut -f1 -d '/' | tr '\n' ',')
+			ports=$(cat nmap_temp | grep /tcp | cut -f1 -d '/' | tr '\n' ',')
 			rm nmap_temp
 			echo ''
 
