@@ -1,23 +1,22 @@
 #!/bin/bash
 
-#TODO: fping
-
 trap ctrl_c INT
 
 function ctrl_c() {
         printf '\nBye!\n'
-        rm ping_temp nmap_temp $out
+        rm ping_temp nmap_temp alive_temp hosts $out
         exit 1
 } 2>/dev/null
 
 function help() {
-	echo 'usage: p0rtscan [-d] [-p] host'
+	echo 'usage: p0rtscan [-d] [-p] [-r] addr'
 	echo ''
 	echo 'optimized nmap scan useful for pentesting, ctfs, etc'
 	echo ''
 	echo 'options:'
 	echo -e '  -d\tdefault scan'
 	echo -e '  -p\tproxy scan'
+	echo -e '  -r\trange scan (slow)'
 	echo ''
 }
 
@@ -27,7 +26,7 @@ then
 	exit 1
 fi
 
-while getopts ':dp' opt
+while getopts ':dpr' opt
 do
 	case $opt in
 		d)
@@ -57,7 +56,7 @@ do
 			echo ''
 
 			echo '[*] Scanning all ports...'
-			nmap -v $2 -p- -T4 --min-rate 5000 -oN nmap_temp | grep Discovered
+			nmap -v $2 -p- --min-rate 5000 -Pn -T4 -oN nmap_temp 2>/dev/null | grep Discovered
 			ports=$(cat nmap_temp | grep /tcp | cut -f1 -d '/' | tr '\n' ',')
 			rm nmap_temp
 			echo ''
@@ -65,13 +64,13 @@ do
 			echo '[*] Starting detailed scan...'
 			sleep 1
 			out=$(echo nmap-$2)
-			nmap $2 -p $ports -sCV -T4 -oN $out
+			nmap $2 -p $ports -sCV -Pn -T4 -oN $out 2>/dev/null
 		;;
 		p)
 			echo '[*] PROXY SCAN'
                         echo ''
 			echo '[*] Scanning common ports...'
-			proxychains nmap -Pn -sT -v $2 -T4 -oN nmap_temp 2>/dev/null | grep Discovered
+			proxychains nmap -v $2 -sT -Pn -T4 -oN nmap_temp 2>/dev/null | grep Discovered
 			ports=$(cat nmap_temp | grep /tcp | cut -f1 -d '/' | tr '\n' ',')
 			rm nmap_temp
 			echo ''
@@ -79,8 +78,34 @@ do
 			echo '[*] Starting detailed scan...'
 			sleep 1
 			out=$(echo nmap-$2)
-			proxychains nmap -Pn -sTCV $2 -p $ports -T4 -oN $out 2>/dev/null
+			proxychains nmap $2 -p $ports -sTCV -Pn -T4 -oN $out 2>/dev/null
 		;;
+		r)
+                        echo '[*] RANGE SCAN'
+                        echo ''
+                        echo "[*] Finding live hosts on $2"
+			fping -I tun0 -r 5 -q -a -g $2 > alive_temp
+			sort -u alive_temp | sort -V > hosts
+			echo "Found `wc -l hosts | cut -f1 -d ' '` alive"
+			rm alive_temp
+			echo ''
+
+			for x in `cat hosts`
+			do
+				echo "[*] Scanning all ports: $x"
+				nmap -v $x -p- --host-timeout 30m -Pn -oN nmap_temp 2>/dev/null | grep Discovered
+                        	ports=$(cat nmap_temp | grep /tcp | cut -f1 -d '/' | tr '\n' ',')
+				rm nmap_temp
+                        	echo ''
+
+                        	echo "[*] Starting detailed scan: $x"
+                        	sleep 1
+                        	out=$(echo nmap-$x)
+                        	nmap $x -p $ports -sCV -Pn -oN $out
+				echo ''
+			done
+                ;;
+
 		\?)
 			help
 		;;
