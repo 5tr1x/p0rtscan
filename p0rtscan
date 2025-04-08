@@ -1,113 +1,113 @@
-#!/bin/bash
+#!/bin/bash                                                                                                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                                                                                              
+trap ctrl_c INT                                                                                                                                                                                                                                                                                                               
+                                                                                                                                                                                                                                                                                                                              
+function ctrl_c() {                                                                                                                                                                                                                                                                                                           
+        printf '\nBye!\n'                                                                                                                                                                                                                                                                                                     
+        rm ping_temp nmap_temp alive_temp hosts $out                                                                                                                                                                                                                                                                          
+        exit 1                                                                                                                                                                                                                                                                                                                
+} 2>/dev/null                                                                                                                                                                                                                                                                                                                 
+                                                                                                                                                                                                                                                                                                                              
+function help() {                                                                                                                                                                                                                                                                                                             
+        echo 'usage: p0rtscan [-d] [-p] [-r] <IP>'                                                                                                                                                                                                                                                                            
+        echo ''                                                                                                                                                                                                                                                                                                               
+        echo 'optimized nmap scan useful for pentesting, ctfs, etc'                                                                                                                                                                                                                                                           
+        echo ''                                                                                                                                                                                                                                                                                                               
+        echo 'options:'                                                                                                                                                                                                                                                                                                       
+        echo -e '  -d\tdefault scan'                                                                                                                                                                                                                                                                                          
+        echo -e '  -p\tproxy scan'                                                                                                                                                                                                                                                                                            
+        echo -e '  -r\trange scan (slow)'                                                                                                                                                                                                                                                                                     
+        echo ''                                                                                                                                                                                                                                                                                                               
+}                                                                                                                                                                                                                                                                                                                             
+                                                                                                                                                                                                                                                                                                                              
+if [ -z $2 ]                                                                                                                                                                                                                                                                                                                  
+then                                                                                                                                                                                                                                                                                                                          
+        help                                                                                                                                                                                                                                                                                                                  
+        exit 1                                                                                                                                                                                                                                                                                                                
+fi                                                                                                                                                                                                                                                                                                                            
+                                                                                                                                                                                                                                                                                                                              
+while getopts ':dpr' opt                                                                                                                                                                                                                                                                                                      
+do                                                                                                                                                                                                                                                                                                                            
+        case $opt in                                                                                                                                                                                                                                                                                                          
+                d)                                                                                                                                                                                                                                                                                                            
+                        echo '[*] DEFAULT SCAN'                                                                                                                                                                                                                                                                               
+                        echo ''                                                                                                                                                                                                                                                                                               
+                        echo "[*] Pinging $2..."                                                                                                                                                                                                                                                                              
+                        ping -c 4 $2 | grep ttl | cut -f6 -d ' ' > ping_temp                                                                                                                                                                                                                                                  
+                        if grep -q '64\|63\|62\|61\|60\|59\|58\|57\|56\|55' ping_temp                                                                                                                                                                                                                                         
+                        then                                                                                                                                                                                                                                                                                                  
+                                echo "$2 is UP"                                                                                                                                                                                                                                                                               
+                                echo "$2 is likely LINUX"                                                                                                                                                                                                                                                                     
 
-trap ctrl_c INT
-
-function ctrl_c() {
-        printf '\nBye!\n'
-        rm ping_temp nmap_temp alive_temp hosts $out
-        exit 1
-} 2>/dev/null
-
-function help() {
-	echo 'usage: p0rtscan [-d] [-p] [-r] addr'
-	echo ''
-	echo 'optimized nmap scan useful for pentesting, ctfs, etc'
-	echo ''
-	echo 'options:'
-	echo -e '  -d\tdefault scan'
-	echo -e '  -p\tproxy scan'
-	echo -e '  -r\trange scan (slow)'
-	echo ''
-}
-
-if [ -z $2 ]
-then
-	help
-	exit 1
-fi
-
-while getopts ':dpr' opt
-do
-	case $opt in
-		d)
-			echo '[*] DEFAULT SCAN'
-			echo ''
-			echo '[*] Pinging target...'
-			ping -c 4 $2 | grep ttl | cut -f6 -d ' ' > ping_temp
-			if grep -q '64\|63\|62\|61\|60\|59\|58\|57' ping_temp
-			then
-			        echo 'Target is UP'
-			        echo 'Target is likely LINUX'
-
-			elif grep -q '128\|127\|126\|125\|124\|123\|122\|121' ping_temp
-			then
-			        echo 'Target is UP'
-			        echo 'Target is likely WINDOWS'
-			elif grep -q '255\|254\|253\|252\|251\|250\|249\|248' ping_temp
-			then
-			        echo 'Target is UP'
-			        echo 'Target is likely OTHER'
-			else
-			        echo 'Target not responding to ping'
-			        rm ping_temp
-			        exit 1
-			fi
-			rm ping_temp
-			echo ''
-
-			echo '[*] Scanning all ports...'
-			nmap -v $2 -p- --min-rate 5000 -Pn -T4 -oN nmap_temp 2>/dev/null | grep Discovered
-			ports=$(cat nmap_temp | grep /tcp | cut -f1 -d '/' | tr '\n' ',')
-			rm nmap_temp
-			echo ''
-
-			echo '[*] Starting detailed scan...'
-			sleep 1
-			out=$(echo nmap-$2)
-			nmap $2 -p $ports -sCV -Pn -T4 -oN $out 2>/dev/null
-		;;
-		p)
-			echo '[*] PROXY SCAN'
+                        elif grep -q '128\|127\|126\|125\|124\|123\|122\|121\|120\|119' ping_temp
+                        then
+                                echo "$2 is UP"
+                                echo "$2 is likely WINDOWS"
+                        elif grep -q '255\|254\|253\|252\|251\|250\|249\|248\|247\|246' ping_temp
+                        then
+                                echo "$2 is UP"
+                                echo "$2 is likely OTHER"
+                        else
+                                echo "$2 not responding to ping"
+                                rm ping_temp
+                                exit 1
+                        fi
+                        rm ping_temp
                         echo ''
-			echo '[*] Scanning common ports...'
-			proxychains nmap -v $2 -sT -Pn -T4 -oN nmap_temp 2>/dev/null | grep Discovered
-			ports=$(cat nmap_temp | grep /tcp | cut -f1 -d '/' | tr '\n' ',')
-			rm nmap_temp
-			echo ''
 
-			echo '[*] Starting detailed scan...'
-			sleep 1
-			out=$(echo nmap-$2)
-			proxychains nmap $2 -p $ports -sTCV -Pn -T4 -oN $out 2>/dev/null
-		;;
-		r)
+                        echo '[*] Scanning all ports...'
+                        nmap -v $2 -p- --min-rate 5000 -Pn -T4 -oN nmap_temp 2>/dev/null | grep Discovered
+                        ports=$(cat nmap_temp | grep /tcp | cut -f1 -d '/' | tr '\n' ',')
+                        rm nmap_temp
+                        echo ''
+
+                        echo '[*] Starting detailed scan...'
+                        sleep 1
+                        out=$(echo nmap-$2)
+                        nmap $2 -p $ports -sCV -Pn -T4 -oN $out 2>/dev/null
+                ;;
+		p)
+                	echo '[*] PROXY SCAN'
+                        echo ''
+                        echo '[*] Scanning common ports...'
+                        proxychains nmap -v $2 -sT -Pn -T4 -oN nmap_temp 2>/dev/null | grep Discovered
+                        ports=$(cat nmap_temp | grep /tcp | cut -f1 -d '/' | tr '\n' ',')
+                        rm nmap_temp
+                        echo ''
+
+                        echo '[*] Starting detailed scan...'
+                        sleep 1
+                        out=$(echo nmap-$2)
+                        proxychains nmap $2 -p $ports -sTCV -Pn -T4 -oN $out 2>/dev/null
+                ;;
+                r)
                         echo '[*] RANGE SCAN'
                         echo ''
                         echo "[*] Finding live hosts on $2"
-			fping -I tun0 -r 5 -q -a -g $2 > alive_temp
-			sort -u alive_temp | sort -V > hosts
-			echo "Found `wc -l hosts | cut -f1 -d ' '` alive"
-			rm alive_temp
-			echo ''
+                        fping -I tun0 -r 5 -q -a -g $2 > alive_temp
+                        sort -u alive_temp | sort -V > hosts
+                        echo "Found `wc -l hosts | cut -f1 -d ' '` alive"
+                        rm alive_temp
+                        echo ''
 
-			for x in `cat hosts`
-			do
-				echo "[*] Scanning all ports: $x"
-				nmap -v $x -p- --host-timeout 30m -Pn -oN nmap_temp 2>/dev/null | grep Discovered
-                        	ports=$(cat nmap_temp | grep /tcp | cut -f1 -d '/' | tr '\n' ',')
-				rm nmap_temp
-                        	echo ''
+                        for x in `cat hosts`
+                        do
+                                echo "[*] Scanning all ports: $x"
+                                nmap -v $x -p- --host-timeout 30m -Pn -oN nmap_temp 2>/dev/null | grep Discovered
+                                ports=$(cat nmap_temp | grep /tcp | cut -f1 -d '/' | tr '\n' ',')
+                                rm nmap_temp
+                                echo ''
 
-                        	echo "[*] Starting detailed scan: $x"
-                        	sleep 1
-                        	out=$(echo nmap-$x)
-                        	nmap $x -p $ports -sCV -Pn -oN $out
-				echo ''
-			done
+                                echo "[*] Starting detailed scan: $x"
+                                sleep 1
+                                out=$(echo nmap-$x)
+                                nmap $x -p $ports -sCV -Pn -oN $out
+                                echo ''
+                        done
                 ;;
 
-		\?)
-			help
-		;;
-	esac
+                \?)
+                        help
+                ;;
+        esac
 done
